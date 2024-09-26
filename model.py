@@ -11,10 +11,12 @@ import datetime
 model = load_model('digit_recognizer_model.keras')
 
 def preprocess_image(image_path,left_cor = 60, upper_cor = 1680, right_cor = 120, lower_cor = 1775):
+  
+  filename = os.path.splitext(os.path.basename(image_path))[0]
   # output folder
   base_output_dir = './output_images'
   timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-  output_folder = os.path.join(base_output_dir, f'processed_{timestamp}')
+  output_folder = os.path.join(base_output_dir, f'processed_{timestamp}_{filename}')
 
   # Ensure the output folder exists
   os.makedirs(output_folder, exist_ok=True)

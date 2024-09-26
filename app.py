@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template
 import pandas as pd
 from model import preprocess_image, predict
+import os
 
 app = Flask(__name__)
 
@@ -13,9 +14,16 @@ def predict_route():
     if 'file' not in request.files:
         return "No file uploaded", 400
     file = request.files['file']
+
+    # Save the uploaded file to a temporary location
+    temp_image_path = os.path.join('temp', file.filename)
+    os.makedirs('temp', exist_ok=True)  # Ensure the temp directory exists
+    file.save(temp_image_path)
     
     # Assuming the file is an image, process it
-    df = preprocess_image(file)  # User-defined processing function
+    df = preprocess_image(temp_image_path)  # User-defined processing function
+
+    os.remove(temp_image_path)
 
     new_test = df.to_numpy().reshape(-1, 28, 28, 1)
 
