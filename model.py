@@ -4,24 +4,42 @@ from tensorflow.keras.models import load_model
 from PIL import Image
 import cv2
 import io
+import os
+import datetime
 
 # Load your trained model
 model = load_model('digit_recognizer_model.keras')
 
 def preprocess_image(image_path,left_cor = 60, upper_cor = 1680, right_cor = 120, lower_cor = 1775):
+  # output folder
+  base_output_dir = './output_images'
+  timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+  output_folder = os.path.join(base_output_dir, f'processed_{timestamp}')
+
+  # Ensure the output folder exists
+  os.makedirs(output_folder, exist_ok=True)
+
+
   img = Image.open(image_path)
   crop_box = (left_cor, upper_cor, right_cor, lower_cor)
   cropped_img = img.crop(crop_box)
 
-  cropped_img.save('cropped_image.jpg')
-  image_path = 'cropped_image.jpg'
-  img = cv2.imread(image_path)
+  # Save the cropped image
+  cropped_img_path = os.path.join(output_folder, 'cropped_image.jpg')
+  cropped_img.save(cropped_img_path)
+
+  img = cv2.imread(cropped_img_path)
 
   # Convert to grayscale
   gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
   
   #Apply thresholding to make the digits stand out
   _, thresh = cv2.threshold(gray, 120, 250, cv2.THRESH_BINARY_INV)
+
+
+  # Save the preprocessed image
+  preprocessed_img_path = os.path.join(output_folder, 'preprocessed_image.jpg')
+  cv2.imwrite(preprocessed_img_path, thresh)
   
   # Get the height and width of the image
   height, width = thresh.shape
@@ -34,6 +52,11 @@ def preprocess_image(image_path,left_cor = 60, upper_cor = 1680, right_cor = 120
   for i in range(3):
     cropped_image = thresh[i * crop_height : (i + 1) * crop_height, :]
     cropped_images.append(cropped_image)
+
+    #Save the cropped digits
+    cropped_image_path = os.path.join(output_folder, f'cropped_part_{i+1}.jpg')
+    cv2.imwrite(cropped_image_path, cropped_image)
+
 
   # Resize each cropped image to 28x28 and store in a DataFrame
   image_data = []
