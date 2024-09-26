@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template
 import pandas as pd
-from model import process_image, predict
+from model import preprocess_image, predict
 
 app = Flask(__name__)
 
@@ -15,8 +15,11 @@ def predict_route():
     file = request.files['file']
     
     # Assuming the file is an image, process it
-    df = process_image(file)  # User-defined processing function
-    prediction = predict(df)   # Prediction using the model
+    df = preprocess_image(file)  # User-defined processing function
+
+    new_test = df.to_numpy().reshape(-1, 28, 28, 1)
+
+    prediction = predict(new_test)   # Prediction using the model
 
     return str(prediction)  # Return the prediction as a string
 
